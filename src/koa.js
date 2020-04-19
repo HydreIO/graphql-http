@@ -1,6 +1,9 @@
-import graphql from 'graphql';
+import graphql from 'graphql'
+import { Readable } from 'stream'
 
-const { parse, getOperationAST, execute } = graphql;
+const { parse, getOperationAST, execute, subscribe } = graphql
+
+export const idField = Symbol("id")
 
 export default function graphqlHTTP({
 	schema = (() => { throw new Error("Option 'schema' is required") })(),
@@ -9,6 +12,7 @@ export default function graphqlHTTP({
 	return async function middleware(ctx) {
 		const {
 			query = ctx.throw(400, "'query' field not provided"),
+			variables: rawVariables,
 			operationName
 		} = ctx.body || ctx.query;
 		
@@ -16,13 +20,22 @@ export default function graphqlHTTP({
 		const { operation } = getOperationAST(document, operationName)
 			|| ctx.throw(400, `Operation '${operationName}' not found`)
 
-		const result = await execute({
+		const options = {
 			document,
 			schema,
 			operationName,
 			rootValue
-		})
+		};
 
-		ctx.body = result
+		if (operation === 'subscription') {
+			ctx.type = "text/event-stream"
+			ctx.body = Readable.from((async function *() {
+				let id = 0;
+				for await (const data of (await subscribe(options))) {
+					yield `event:${data[idField] || id++}\ndata: ${JSON.stringify(data)}\n\n`
+				}
+			}()))
+		} else
+			ctx.body = await execute(options)
 	}
 }

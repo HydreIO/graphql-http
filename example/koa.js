@@ -20,6 +20,17 @@ const app = new Koa()
 					hello(root, { name }) {
 						return `Hello ${name} !`
 					}
+				},
+				Subscription: {
+					onMessage: {
+						async *subscribe() {
+							while (true) {
+								console.log("lol")
+								await new Promise(resolve => setTimeout(resolve, 1000))
+								yield "Hello"
+							}
+						}
+					}
 				}
 			}
 		})
