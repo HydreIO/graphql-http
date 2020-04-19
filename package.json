@@ -1,0 +1,35 @@
+{
+  "name": "@hydre/graphql-http",
+  "version": "1.0.0",
+  "description": "GraphQL over HTTP hydre's way",
+  "main": "src/index.js",
+  "type": "module",
+  "exports": {
+    "./koa": "./src/koa.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example:koa": "node --harmony --experimental-specifier-resolution=node example/koa.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HydreIO/graphql-http.git"
+  },
+  "keywords": [
+    "graphql"
+  ],
+  "author": "HydreIO Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HydreIO/graphql-http/issues"
+  },
+  "homepage": "https://github.com/HydreIO/graphql-http#readme",
+  "devDependencies": {
+    "graphql-tools": "^5.0.0",
+    "koa": "^2.11.0",
+    "koa-bodyparser": "^4.3.0"
+  },
+  "dependencies": {
+    "graphql": "^15.0.0"
+  }
+}
