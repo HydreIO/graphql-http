@@ -1,7 +1,7 @@
 import graphql from 'graphql'
 import { Readable } from 'stream'
 
-const { parse, getOperationAST, execute, subscribe } = graphql
+const { parse, getOperationAST, execute, subscribe, validate } = graphql
 
 export const idField = Symbol("id")
 
@@ -17,6 +17,14 @@ export default function graphqlHTTP({
 		} = ctx.body || ctx.query;
 		
 		const document = parse(query)
+
+		const errors = validate(schema, document)
+		if (errors.length) {
+			ctx.status = 400
+			ctx.body = { errors, data: null }
+			return
+		}
+
 		const { operation } = getOperationAST(document, operationName)
 			|| ctx.throw(400, `Operation '${operationName}' not found`)
 
