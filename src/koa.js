@@ -14,7 +14,7 @@ export default function graphqlHTTP({
 			query = ctx.throw(400, "'query' field not provided"),
 			variables: rawVariables,
 			operationName
-		} = ctx.body || ctx.query;
+		} = ctx.request.body || ctx.query;
 		
 		const document = parse(query)
 
