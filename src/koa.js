@@ -1,49 +1,77 @@
 import graphql from 'graphql'
 import { Readable } from 'stream'
 
-const { parse, getOperationAST, execute, subscribe, validate } = graphql
+const {
+  parse,
+  getOperationAST,
+  execute,
+  subscribe,
+  validate,
+} = graphql
+const no_schema_error = () => {
+  throw new Error('Option \'schema\' is required')
+}
+const k_field = Symbol('sse id')
+/* c8 ignore next 11 */
+// i'll let DeltaEvo test those :)
+const stream_response = async function *(options) {
+  let id = 0
 
-export const idField = Symbol("id")
+  for await (const data of await subscribe(options)) {
+    const json = JSON.stringify(data)
+    const event_id = data[k_field] ?? id++
 
-export default function graphqlHTTP({
-	schema = (() => { throw new Error("Option 'schema' is required") })(),
-	rootValue,
-} = {}) {
-	return async function middleware(ctx) {
-		const {
-			query = ctx.throw(400, "'query' field not provided"),
-			variables: rawVariables,
-			operationName
-		} = ctx.request.body || ctx.query;
-		
-		const document = parse(query)
+    yield `event:${ event_id }\ndata: ${ json }\n\n`
+  }
+}
 
-		const errors = validate(schema, document)
-		if (errors.length) {
-			ctx.status = 400
-			ctx.body = { errors, data: null }
-			return
-		}
+export { k_field }
+export default ({
+  schema = no_schema_error(),
+  rootValue,
+} = {}) => async context => {
+  const {
+    query = context.throw(
+        400,
+        '\'query\' field not provided',
+    ),
+    variables: variableValues,
+    operationName,
+  } = context.request.body
+  const document = parse(query)
+  const errors = validate(schema, document)
 
-		const { operation } = getOperationAST(document, operationName)
-			|| ctx.throw(400, `Operation '${operationName}' not found`)
+  if (errors.length) {
+    context.status = 400
+    context.body = {
+      errors,
+      data: undefined,
+    }
+    return
+  }
 
-		const options = {
-			document,
-			schema,
-			operationName,
-			rootValue
-		};
+  const { operation }
+    = getOperationAST(document, operationName)
+    || context.throw(
+        400,
+        `Operation '${ operationName }' not found`,
+    )
+  const options = {
+    document,
+    schema,
+    operationName,
+    rootValue,
+    variableValues,
+  }
 
-		if (operation === 'subscription') {
-			ctx.type = "text/event-stream"
-			ctx.body = Readable.from((async function *() {
-				let id = 0;
-				for await (const data of (await subscribe(options))) {
-					yield `event:${data[idField] || id++}\ndata: ${JSON.stringify(data)}\n\n`
-				}
-			}()))
-		} else
-			ctx.body = await execute(options)
-	}
+  /* c8 ignore next 6 */
+  // subscription related
+  if (operation === 'subscription') {
+    context.type = 'text/event-stream'
+    context.body = Readable.from(stream_response(options))
+    return
+  }
+
+  // eslint-disable-next-line require-atomic-updates
+  context.body = await execute(options)
 }

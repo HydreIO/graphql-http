@@ -8,4 +8,30 @@
   <img src="https://img.shields.io/github/workflow/status/hydreio/graphql-http/CI?logo=Github&style=for-the-badge" />
 </p>
 
-<h3 align=center>A GraphQL http server and client</h3>
+<h3 align=center>GraphQL over http</h3>
+
+## Install
+
+```sh
+npm i @hydre/graphql-http
+```
+
+## Usage
+
+### | KoaJS
+
+```js
+import Koa from 'koa'
+import { readFileSync } from 'fs'
+import bodyParser from 'koa-bodyparser'
+import graphql from 'graphql'
+import graphqlHTTP from '../src/koa.js'
+
+const { buildSchema } = graphql
+const schema = buildSchema(readFileSync('/path/to/schema.gql', 'utf-8'))
+const app = new Koa()
+  .use(bodyParser())
+  .use(graphqlHTTP({ schema, rootValue: {} }))
+
+app.listen(3000)
+```
