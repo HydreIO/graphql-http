@@ -29,6 +29,9 @@
       "@babel/plugin-proposal-private-methods"
     ]
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "HydreIO Team",
   "license": "UNLICENSE",
   "bugs": {
