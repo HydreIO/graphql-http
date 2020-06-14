@@ -1,13 +1,7 @@
 import graphql from 'graphql'
 import { Readable } from 'stream'
 
-const {
-  parse,
-  getOperationAST,
-  execute,
-  subscribe,
-  validate,
-} = graphql
+const { parse, getOperationAST, execute, subscribe, validate } = graphql
 const no_schema_error = () => {
   throw new Error('Option \'schema\' is required')
 }
@@ -31,10 +25,7 @@ export default ({
   rootValue,
 } = {}) => async context => {
   const {
-    query = context.throw(
-        400,
-        '\'query\' field not provided',
-    ),
+    query = context.throw(400, '\'query\' field not provided'),
     variables: variableValues,
     operationName,
   } = context.request.body
@@ -52,10 +43,9 @@ export default ({
 
   const { operation }
     = getOperationAST(document, operationName)
-    || context.throw(
-        400,
-        `Operation '${ operationName }' not found`,
-    )
+    /* c8 ignore next 2 */
+    // would have to do raw request, meh
+    || context.throw(400, `Operation '${ operationName }' not found`)
   const options = {
     document,
     schema,
