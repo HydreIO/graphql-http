@@ -23,6 +23,7 @@ export { k_field }
 export default ({
   schema = no_schema_error(),
   rootValue,
+  buildContext = () => ({}),
 } = {}) => async context => {
   const {
     query = context.throw(400, '\'query\' field not provided'),
@@ -52,6 +53,7 @@ export default ({
     operationName,
     rootValue,
     variableValues,
+    contextValue: await buildContext(context),
   }
 
   /* c8 ignore next 6 */
