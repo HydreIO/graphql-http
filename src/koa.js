@@ -1,3 +1,4 @@
+/* eslint-disable require-atomic-updates */
 import graphql from 'graphql'
 import { Readable } from 'stream'
 
@@ -53,7 +54,7 @@ export default ({
     operationName,
     rootValue,
     variableValues,
-    contextValue: await buildContext(context),
+    contextValue: await buildContext({ ...context }), // avoid mutation
   }
 
   /* c8 ignore next 6 */
@@ -64,6 +65,5 @@ export default ({
     return
   }
 
-  // eslint-disable-next-line require-atomic-updates
   context.body = await execute(options)
 }
