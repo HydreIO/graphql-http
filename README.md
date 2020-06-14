@@ -25,7 +25,7 @@ import Koa from 'koa'
 import { readFileSync } from 'fs'
 import bodyParser from 'koa-bodyparser'
 import graphql from 'graphql'
-import graphqlHTTP from '../src/koa.js'
+import graphqlHTTP from '@hydre/graphql-http/koa'
 
 const { buildSchema } = graphql
 const schema = buildSchema(readFileSync('/path/to/schema.gql', 'utf-8'))
