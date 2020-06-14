@@ -28,6 +28,7 @@ let used_port = 5000
 
 export default class {
   static name = 'Graphql-http (koa)'
+  static timeout = 1000
 
   #port = ++used_port
   #ready
