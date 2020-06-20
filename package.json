@@ -4,7 +4,7 @@
   "description": "GraphQL over http",
   "type": "module",
   "exports": {
-    "./koa": "src/koa.js"
+    "./koa": "./src/koa.js"
   },
   "scripts": {
     "test": "node --harmony-top-level-await test/index.test.js",
