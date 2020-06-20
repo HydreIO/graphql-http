@@ -18,7 +18,7 @@ pipeline(through, reporter(), process.stdout, () => {})
 const doubt = Doubt({
   stdout : through,
   title  : 'GraphQL Http',
-  calls  : 3,
+  calls  : 4,
   timeout: 1000,
 })
 const schema = buildSchema(readFileSync('./test/schema.gql', 'utf-8'))
@@ -66,6 +66,15 @@ doubt['a graphql request just works']({
   because: response.hello,
   is     : 'Hello Pepeg !',
 })
+
+try {
+  console.log(await GR.request(host, '{ hello(name: w\@w") }'))
+} catch (error) {
+  doubt['an invalid operation should give an error 400']({
+    because: error.message.slice(0, 25),
+    is     : 'GraphQL Error (Code: 400)',
+  })
+}
 
 try {
   await GR.request(host, '{ invalid }')

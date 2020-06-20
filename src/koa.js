@@ -36,39 +36,44 @@ export default ({
     variables: variableValues,
     operationName,
   } = context.request.body
-  const document = parse(query)
-  const errors = validate(schema, document)
 
-  if (errors.length) {
-    context.status = 400
-    context.body = {
-      errors,
-      data: undefined,
+  try {
+    const document = parse(query)
+    const errors = validate(schema, document)
+
+    if (errors.length) {
+      context.status = 400
+      context.body = {
+        errors,
+        data: undefined,
+      }
+      return
     }
-    return
-  }
 
-  const { operation }
-    = getOperationAST(document, operationName)
-    /* c8 ignore next 2 */
-    // would have to do raw request, meh
-    || context.throw(400, `Operation '${ operationName }' not found`)
-  const options = {
-    document,
-    schema,
-    operationName,
-    rootValue,
-    variableValues,
-    contextValue: await buildContext({ ...context }), // avoid mutation
-  }
+    const { operation }
+      = getOperationAST(document, operationName)
+      /* c8 ignore next 2 */
+      // would have to do raw request, meh
+      || context.throw(400, `Operation '${ operationName }' not found`)
+    const options = {
+      document,
+      schema,
+      operationName,
+      rootValue,
+      variableValues,
+      contextValue: await buildContext({ ...context }), // avoid mutation
+    }
 
-  /* c8 ignore next 6 */
-  // subscription related
-  if (operation === 'subscription') {
-    context.type = 'text/event-stream'
-    context.body = Readable.from(stream_response(options))
-    return
-  }
+    /* c8 ignore next 6 */
+    // subscription related
+    if (operation === 'subscription') {
+      context.type = 'text/event-stream'
+      context.body = Readable.from(stream_response(options))
+      return
+    }
 
-  context.body = await execute(options)
+    context.body = await execute(options)
+  } catch (error) {
+    context.throw(400, `Invalid operation: ${ error.message }`)
+  }
 }
