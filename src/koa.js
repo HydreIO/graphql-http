@@ -1,8 +1,13 @@
 /* eslint-disable require-atomic-updates */
-import graphql from 'graphql'
+import {
+  parse,
+  getOperationAST,
+  execute,
+  subscribe,
+  validate,
+} from 'graphql/index.mjs'
 import { Readable } from 'stream'
 
-const { parse, getOperationAST, execute, subscribe, validate } = graphql
 const no_schema_error = () => {
   throw new Error('Option \'schema\' is required')
 }

@@ -1,10 +1,9 @@
 import Koa from 'koa'
 import { readFileSync } from 'fs'
 import bodyParser from 'koa-bodyparser'
-import graphql from 'graphql'
+import { buildSchema } from 'graphql/index.mjs'
 import graphqlHTTP from '../src/koa.js'
 
-const { buildSchema } = graphql
 const schema = buildSchema(readFileSync('./test/schema.gql', 'utf-8'))
 const app = new Koa().use(bodyParser())
     .use(graphqlHTTP({

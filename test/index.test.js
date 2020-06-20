@@ -1,7 +1,7 @@
 import Koa from 'koa'
 import { readFileSync } from 'fs'
 import bodyParser from 'koa-bodyparser'
-import graphql from 'graphql'
+import { buildSchema } from 'graphql/index.mjs'
 import graphqlHTTP from '../src/koa.js'
 import GR from 'graphql-request'
 import fetch from 'node-fetch'
@@ -15,7 +15,6 @@ const through = new PassThrough()
 
 pipeline(through, reporter(), process.stdout, () => {})
 
-const { buildSchema } = graphql
 const doubt = Doubt({
   stdout : through,
   title  : 'GraphQL Http',
