@@ -2,11 +2,13 @@
   "name": "@hydre/graphql-http",
   "version": "1.0.7",
   "description": "GraphQL over http",
-  "main": "index.js",
   "type": "module",
+  "exports": {
+    "./koa": "src/koa.js"
+  },
   "scripts": {
-    "test": "node --harmony-top-level-await test/index.js",
-    "coverage": "c8 --check-coverage node --harmony-top-level-await test/index.js",
+    "test": "node --harmony-top-level-await test/index.test.js",
+    "coverage": "c8 --check-coverage node --harmony-top-level-await test/index.test.js",
     "lint": "prettier-eslint $PWD/\"**/*.js\" --print-width 75 --list-different && eslint --color .",
     "format": "prettier-eslint $PWD/\"**/*.js\" --print-width 75 --write",
     "postversion": "git push && git push --tags",
@@ -43,15 +45,15 @@
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.2",
+    "@babel/core": "^7.10.3",
     "@babel/plugin-proposal-class-properties": "^7.10.1",
     "@babel/plugin-proposal-numeric-separator": "^7.10.1",
     "@babel/plugin-proposal-private-methods": "^7.10.1",
-    "@hydre/doubt": "^6.1.0",
-    "@sidy/eslint-config-sidy": "^1.4.12",
+    "@hydre/doubt": "^7.0.0",
+    "@sidy/eslint-config-sidy": "^1.4.13",
     "babel-eslint": "^11.0.0-beta.2",
     "c8": "^7.2.0",
-    "eslint": "^7.2.0",
+    "eslint": "^7.3.0",
     "eslint-plugin-unicorn": "^20.1.0",
     "graphql-request": "^2.0.0",
     "koa": "^2.12.1",
