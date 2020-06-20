@@ -31,7 +31,11 @@ const { buildSchema } = graphql
 const schema = buildSchema(readFileSync('/path/to/schema.gql', 'utf-8'))
 const app = new Koa()
   .use(bodyParser())
-  .use(graphqlHTTP({ schema, rootValue: {} }))
+  .use(graphqlHTTP({
+    schema,
+    rootValue: {},
+    buildContext: async ctx => {}
+  }))
 
 app.listen(3000)
 ```
