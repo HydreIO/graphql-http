@@ -68,7 +68,7 @@ doubt['a graphql request just works']({
 })
 
 try {
-  console.log(await GR.request(host, '{ hello(name: w\@w") }'))
+  console.log(await GR.request(host, '{ hello(name: w@w") }'))
 } catch (error) {
   doubt['an invalid operation should give an error 400']({
     because: error.message.slice(0, 25),
