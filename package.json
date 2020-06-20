@@ -1,6 +1,6 @@
 {
   "name": "@hydre/graphql-http",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "GraphQL over http",
   "type": "module",
   "exports": {
