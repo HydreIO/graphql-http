@@ -72,7 +72,7 @@ export default ({
     operationName,
     rootValue,
     variableValues,
-    contextValue: await buildContext({ ...context }), // avoid mutation
+    contextValue: await buildContext(context),
   }
 
   /* c8 ignore next 6 */
