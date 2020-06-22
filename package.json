@@ -56,7 +56,7 @@
     "eslint": "^7.3.0",
     "eslint-plugin-unicorn": "^20.1.0",
     "graphql-request": "^2.0.0",
-    "koa": "^2.12.1",
+    "koa": "^2.13.0",
     "koa-bodyparser": "^4.3.0",
     "prettier-eslint-cli": "^5.0.0",
     "tap-spec-emoji": "^6.1.2"

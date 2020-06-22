@@ -17,8 +17,8 @@ pipeline(through, reporter(), process.stdout, () => {})
 
 const doubt = Doubt({
   stdout: through,
-  title  : 'GraphQL Http',
-  calls  : 4,
+  title : 'GraphQL Http',
+  calls : 4,
 })
 const schema = buildSchema(readFileSync('./test/schema.gql', 'utf-8'))
 const rootValue = {
