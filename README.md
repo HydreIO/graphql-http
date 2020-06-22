@@ -33,8 +33,9 @@ const app = new Koa()
   .use(bodyParser())
   .use(graphqlHTTP({
     schema,
-    rootValue: {},
-    buildContext: async ctx => {}
+    rootValue   : {},
+    buildContext: async ctx => {},
+    formatError : error => error
   }))
 
 app.listen(3000)

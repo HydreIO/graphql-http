@@ -38,6 +38,7 @@ export default ({
   schema = no_schema_error(),
   rootValue,
   buildContext = () => ({}),
+  formatError = error => error,
 } = {}) => async context => {
   const {
     query = context.throw(400, '\'query\' field not provided'),
@@ -81,5 +82,10 @@ export default ({
     return
   }
 
-  context.body = await execute(options)
+  const { data, errors: execution_errors } = await execute(options)
+
+  context.body = {
+    data,
+    ...execution_errors && { errors: execution_errors.map(formatError) },
+  }
 }
