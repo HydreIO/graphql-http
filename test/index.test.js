@@ -1,7 +1,7 @@
 import Koa from 'koa'
 import { readFileSync } from 'fs'
 import bodyParser from 'koa-bodyparser'
-import { buildSchema } from 'graphql/index.mjs'
+import { buildSchema, GraphQLError } from 'graphql/index.mjs'
 import graphqlHTTP from '../src/koa.js'
 import GR from 'graphql-request'
 import fetch from 'node-fetch'
@@ -18,12 +18,15 @@ pipeline(through, reporter(), process.stdout, () => {})
 const doubt = Doubt({
   stdout: through,
   title : 'GraphQL Http',
-  calls : 4,
+  calls : 5,
 })
 const schema = buildSchema(readFileSync('./test/schema.gql', 'utf-8'))
 const rootValue = {
   hello({ name }) {
     return `Hello ${ name } !`
+  },
+  me() {
+    throw new Error('N word')
   },
   async *onMessage() {
     while (true) {
@@ -44,6 +47,7 @@ const http_server = await new Promise(resolve => {
       .use(graphqlHTTP({
         schema,
         rootValue,
+        formatError: () => new GraphQLError('[hidden]'),
       }))
       .listen(3000, () => {
         resolve(app)
@@ -67,11 +71,20 @@ doubt['a graphql request just works']({
 })
 
 try {
-  console.log(await GR.request(host, '{ hello(name: w@w") }'))
+  await GR.request(host, '{ hello(name: w@w") }')
 } catch (error) {
   doubt['an invalid operation should give an error 400']({
     because: error.message.slice(0, 25),
     is     : 'GraphQL Error (Code: 400)',
+  })
+}
+
+try {
+  await GR.request(host, '{ me { sayHello(to: "pepeg") } }')
+} catch (error) {
+  doubt['error should be formatted']({
+    because: error.message.slice(0, 8),
+    is     : '[hidden]',
   })
 }
 

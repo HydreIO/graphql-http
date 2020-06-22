@@ -12,13 +12,17 @@ const no_schema_error = () => {
   throw new Error('Option \'schema\' is required')
 }
 const k_field = Symbol('sse id')
-/* c8 ignore next 11 */
+/* c8 ignore next 15 */
 // i'll let DeltaEvo test those :)
-const stream_response = async function *(options) {
+const stream_response = async function *(options, formatError) {
   let id = 0
 
-  for await (const data of await subscribe(options)) {
-    const json = JSON.stringify(data)
+  for await (const { data, errors } of await subscribe(options)) {
+    const payload = {
+      data,
+      ...errors && { errors: errors.map(formatError) },
+    }
+    const json = JSON.stringify(payload)
     const event_id = data[k_field] ?? id++
 
     yield `event:${ event_id }\ndata: ${ json }\n\n`
@@ -46,9 +50,6 @@ export default ({
     operationName,
   } = context.request.body
   const document = try_parse(query, context)
-
-  if (!document) return
-
   const errors = validate(schema, document)
 
   if (errors.length) {
