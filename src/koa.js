@@ -66,13 +66,17 @@ export default ({
     /* c8 ignore next 2 */
     // would have to do raw request, meh
     || context.throw(400, `Operation '${ operationName }' not found`)
+  const contextValue = await buildContext(context)
+
+  if (!contextValue) return
+
   const options = {
     document,
     schema,
     operationName,
     rootValue,
     variableValues,
-    contextValue: await buildContext(context),
+    contextValue,
   }
 
   /* c8 ignore next 6 */
