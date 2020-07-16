@@ -94,6 +94,7 @@ export default ({
       data,
       ...execution_errors && { errors: execution_errors.map(formatError) },
     }
+    /* c8 ignore next 7 */
   } catch (error) {
     context.body = {
       data  : undefined,
