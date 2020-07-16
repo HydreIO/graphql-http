@@ -87,20 +87,12 @@ export default ({
     return
   }
 
-  try {
-    const { data, errors: execution_errors } = await execute(options)
+  const { data, errors: execution_errors } = await execute(options)
 
-    context.body = {
-      data,
-      ...execution_errors && {
-        errors: execution_errors.map(formatError),
-      },
-    }
-    /* c8 ignore next 7 */
-  } catch (error) {
-    context.body = {
-      data  : undefined,
-      errors: [formatError(error)],
-    }
+  context.body = {
+    data,
+    ...execution_errors && {
+      errors: execution_errors.map(formatError),
+    },
   }
 }
