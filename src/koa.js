@@ -83,7 +83,7 @@ export default ({
   // subscription related
   if (operation === 'subscription') {
     context.type = 'text/event-stream'
-    context.body = Readable.from(stream_response(options))
+    context.body = Readable.from(stream_response(options, formatError))
     return
   }
 
