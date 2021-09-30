@@ -11,7 +11,7 @@
     "coverage": "c8 --check-coverage node --harmony-top-level-await test/index.test.js",
     "lint": "prettier-eslint $PWD/\"**/*.js\" --print-width 75 --list-different && eslint --color .",
     "format": "prettier-eslint $PWD/\"**/*.js\" --print-width 75 --write",
-    "postversion": "git push && git push --tags",
+    "postversion": "git push --follow-tags",
     "example:koa": "node example/koa.js"
   },
   "repository": {
