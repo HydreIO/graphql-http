@@ -10,9 +10,9 @@ const Koa = context => {
     query,
     variableValues,
     operationName,
-    reply: ({ status = 200, type, body }) => {
+    reply: ({ status = 200, type = 'application/json', body }) => {
       context.status = status
-      if (type) context.type = type
+      context.type = type
       context.body = body
     },
   }
