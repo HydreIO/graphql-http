@@ -29,14 +29,14 @@ import graphqlHTTP from '@hydre/graphql-http/koa'
 
 const { buildSchema } = graphql
 const schema = buildSchema(readFileSync('/path/to/schema.gql', 'utf-8'))
-const app = new Koa()
-  .use(bodyParser())
-  .use(graphqlHTTP({
+const app = new Koa().use(bodyParser()).use(
+  graphqlHTTP({
     schema,
-    rootValue   : {},
+    rootValue: {},
     buildContext: async ctx => {},
-    formatError : error => error
-  }))
+    formatError: error => error,
+  })
+)
 
 app.listen(3000)
 ```
