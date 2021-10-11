@@ -6,6 +6,7 @@ import {
   execute,
   subscribe,
   validate,
+  GraphQLError,
 } from 'graphql/index.mjs'
 
 const no_schema_error = () => {
@@ -28,13 +29,14 @@ const stream_response = async function* (options, formatError) {
     yield `event:${event_id}\ndata: ${json}\n\n`
   }
 }
-const try_parse = (query, reply) => {
+const try_parse = ({ query, reply, formatError }) => {
   try {
     return parse(query)
   } catch (error) {
     reply({
-      status: 400,
-      body: new Error(`Invalid operation: ${error.message}`),
+      errors: [
+        formatError(new GraphQLError(`Invalid operation: ${error.message}`)),
+      ],
     })
     return undefined
   }
@@ -52,17 +54,20 @@ export default implementation =>
     const { query, variableValues, operationName, reply } = implementation(
       ...input
     )
-    const document = try_parse(query, reply)
+    if (!query) {
+      reply({
+        errors: [formatError(new GraphQLError("'query' field not provided"))],
+      })
+      return
+    }
+    const document = try_parse({ query, reply, formatError })
     if (!document) return
     const errors = validate(schema, document)
 
     if (errors.length) {
       reply({
-        status: 400,
-        body: {
-          errors,
-          data: undefined,
-        },
+        errors,
+        data: undefined,
       })
       return
     }
@@ -72,8 +77,11 @@ export default implementation =>
     // would have to do raw request, meh
     if (!operation)
       reply({
-        status: 400,
-        body: new Error(`Operation '${operationName}' not found`),
+        errors: [
+          formatError(
+            new GraphQLError(`Operation '${operationName}' not found`)
+          ),
+        ],
       })
     const contextValue = await buildContext(...input)
 
@@ -101,11 +109,9 @@ export default implementation =>
     const { data, errors: execution_errors } = await execute(options)
 
     reply({
-      body: {
-        data,
-        ...(execution_errors && {
-          errors: execution_errors.map(formatError),
-        }),
-      },
+      data,
+      ...(execution_errors && {
+        errors: execution_errors.map(formatError),
+      }),
     })
   }

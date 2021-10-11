@@ -54,7 +54,6 @@
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "5.1.0",
     "fastify": "^3.22.0",
-    "graphql-request": "^3.5.0",
     "husky": "4.3.8",
     "koa": "^2.13.3",
     "koa-bodyparser": "^4.3.0",

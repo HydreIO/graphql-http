@@ -2,7 +2,7 @@ import base from './base.js'
 
 const Koa = context => {
   const {
-    query = context.throw(400, "'query' field not provided"),
+    query,
     variables: variableValues,
     operationName,
   } = context.request.body
@@ -10,8 +10,8 @@ const Koa = context => {
     query,
     variableValues,
     operationName,
-    reply: ({ status = 200, type = 'application/json', body }) => {
-      context.status = status
+    reply: ({ type = 'application/json', ...body }) => {
+      context.status = 200
       context.type = type
       context.body = body
     },

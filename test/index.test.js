@@ -1,8 +1,9 @@
 import { readFileSync } from 'fs'
 import { pipeline, PassThrough } from 'stream'
+import { setTimeout } from 'timers/promises'
 
-import { buildSchema } from 'graphql/index.mjs'
-import GR from 'graphql-request'
+import fetch from 'node-fetch'
+import { buildSchema, GraphQLError } from 'graphql/index.mjs'
 import Doubt from '@hydre/doubt'
 import reporter from 'tap-spec-emoji'
 
@@ -17,7 +18,7 @@ pipeline(through, reporter(), process.stdout, () => {})
 const doubt = Doubt({
   stdout: through,
   title: 'GraphQL Http',
-  calls: 5 * IMPL_AMOUNT,
+  calls: 6 * IMPL_AMOUNT,
 })
 const options = {
   schema: buildSchema(readFileSync('./test/schema.gql', 'utf-8')),
@@ -35,6 +36,10 @@ const options = {
       }
     },
   },
+  formatError: error => {
+    if (error.message === 'N word') return new GraphQLError('[hidden]')
+    return error
+  },
 }
 const host = 'http://localhost:3000'
 const query = /* GraphQL */ `
@@ -42,49 +47,67 @@ const query = /* GraphQL */ `
     hello(name: $name)
   }
 `
+const request = ({ query, variables = {} } = {}) =>
+  fetch(host, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ variables, query }),
+  }).then(response => response.json())
 const test_implementation = async ({ name, http_server, graphqlHTTP }) => {
   try {
     graphqlHTTP()
-  } catch (error) {
+  } catch ({ message }) {
     doubt[`(${name}) a middleware should be created with a schema`]({
-      because: error.message,
+      because: message,
       is: "Option 'schema' is required",
     })
   }
 
-  const { hello } = await GR.request(host, query, { name: 'Pepeg' })
+  const { errors } = await request()
+
+  doubt[`(${name}) not providing the query field gives an error`]({
+    because: errors[0]?.message,
+    is: "'query' field not provided",
+  })
+
+  const {
+    data: { hello },
+  } = await request({ query, variables: { name: 'Pepeg' } })
 
   doubt[`(${name}) a graphql request just works`]({
     because: hello,
     is: 'Hello Pepeg !',
   })
 
-  try {
-    await GR.request(host, '{ hello(name: w@w") }')
-  } catch (error) {
-    doubt[`(${name}) an invalid operation should give an error 400`]({
-      because: error.message.slice(0, 25),
-      is: 'GraphQL Error (Code: 400)',
-    })
-  }
+  doubt[`(${name}) an invalid operation should give an error 400`]({
+    because: await request({ query: '{ hello(name: w@w") }' }),
+    is: {
+      errors: [
+        {
+          message: 'Invalid operation: Syntax Error: Expected Name, found "@".',
+        },
+      ],
+    },
+  })
 
-  try {
-    await GR.request(host, '{ me { sayHello(to: "pepeg") } }')
-  } catch (error) {
-    doubt[`(${name}) error should be formatted`]({
-      because: error.message.slice(0, 8),
-      is: '[hidden]',
-    })
-  }
+  doubt[`(${name}) error should be formatted`]({
+    because: await request({ query: '{ me { sayHello(to: "pepeg") } }' }),
+    is: { data: { me: null }, errors: [{ message: '[hidden]' }] },
+  })
 
-  try {
-    await GR.request(host, '{ invalid }')
-  } catch (error) {
-    doubt[`(${name}) an invalid query should give an error 400`]({
-      because: error.message.slice(0, 45),
-      is: 'Cannot query field "invalid" on type "Query".',
-    })
-  }
+  doubt[`(${name}) an invalid query should give an error 400`]({
+    because: await request({ query: '{ invalid }' }),
+    is: {
+      errors: [
+        {
+          message: 'Cannot query field "invalid" on type "Query".',
+          locations: [{ line: 1, column: 3 }],
+        },
+      ],
+    },
+  })
 
   await new Promise(resolve => {
     http_server.close(resolve)
@@ -92,4 +115,5 @@ const test_implementation = async ({ name, http_server, graphqlHTTP }) => {
 }
 
 test_implementation(await koa(options))
+await setTimeout(2000)
 test_implementation(await fastify(options))
