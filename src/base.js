@@ -73,7 +73,7 @@ export default implementation =>
     }
 
     const { operation } = getOperationAST(document, operationName)
-    /* c8 ignore next 6 */
+    /* c8 ignore next 9 */
     // would have to do raw request, meh
     if (!operation)
       reply({
