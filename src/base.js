@@ -83,10 +83,8 @@ export default implementation =>
           ),
         ],
       })
-    const contextValue = await buildContext(...input)
 
-    if (!contextValue) return
-
+    const contextValue = (await buildContext(...input)) ?? {}
     const options = {
       document,
       schema,
