@@ -4,7 +4,9 @@
   "description": "GraphQL over http",
   "type": "module",
   "exports": {
-    "./koa": "./src/koa.js"
+    "./koa": "./src/koa.js",
+    "./fastify": "./src/fastify.js",
+    "./lambda": "./src/lambda.js"
   },
   "scripts": {
     "test": "node test/index.test.js",
