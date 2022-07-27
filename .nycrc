@@ -1,14 +1,9 @@
 {
-  "reporter": [
-    "lcov",
-    "text"
-  ],
-  "include": [
-    "src/**"
-  ],
+  "reporter": ["lcov", "text"],
+  "include": ["src/**"],
   "all": true,
   "clean": true,
-  "lines": 100,
+  "lines": 90,
   "branches": 90,
-  "statements": 100
+  "statements": 90
 }
