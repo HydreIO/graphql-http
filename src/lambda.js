@@ -1,7 +1,7 @@
 import base from './base.js'
 
 const Lambda = (
-  { body: { query, variables, operationName } },
+  { body: { query, variables, operationName } = {} },
   context,
   reply
 ) => ({
