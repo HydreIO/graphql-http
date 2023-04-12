@@ -5,7 +5,7 @@
     <img src="https://img.shields.io/npm/v/@hydre/graphql-http.svg?logo=npm&style=for-the-badge" />
   </a>
   <img src="https://img.shields.io/npm/dw/@hydre/graphql-http?logo=npm&style=for-the-badge" />
-  <img src="https://img.shields.io/github/workflow/status/hydreio/graphql-http/CI?logo=Github&style=for-the-badge" />
+  <img src="https://img.shields.io/github/actions/workflow/status/hydreio/graphql-http/CI?logo=Github&style=for-the-badge" />
 </p>
 
 <h3 align=center>GraphQL over http</h3>
