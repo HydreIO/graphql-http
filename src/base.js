@@ -54,6 +54,7 @@ export default implementation =>
     const { query, variableValues, operationName, reply } = implementation(
       ...input
     )
+
     if (!query) {
       reply({
         errors: [formatError(new GraphQLError("'query' field not provided"))],
