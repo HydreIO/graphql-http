@@ -1,119 +1,93 @@
-import { readFileSync } from 'fs'
-import { pipeline, PassThrough } from 'stream'
+import test from 'node:test'
+import assert from 'node:assert'
+import { readFile } from 'fs/promises'
 import { setTimeout } from 'timers/promises'
 
-import fetch from 'node-fetch'
-import { buildSchema, GraphQLError } from 'graphql/index.mjs'
-import Doubt from '@hydre/doubt'
-import reporter from 'tap-spec-emoji'
+import make_schema from '@hydre/make_schema'
 
 import koa from './koa.js'
-import fastify from './fastify.js'
 
-const through = new PassThrough()
-const IMPL_AMOUNT = 2
-
-pipeline(through, reporter(), process.stdout, () => {})
-
-const doubt = Doubt({
-  stdout: through,
-  title: 'GraphQL Http',
-  calls: 6 * IMPL_AMOUNT,
-})
-const options = {
-  schema: buildSchema(readFileSync('./test/schema.gql', 'utf-8')),
-  rootValue: {
-    hello({ name }) {
-      return `Hello ${name} !`
-    },
-    me() {
-      throw new Error('N word')
-    },
-    async *onMessage() {
-      while (true) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        yield 'Hello'
-      }
-    },
-  },
-  formatError: error => {
-    if (error.message === 'N word') return new GraphQLError('[hidden]')
-    return error
-  },
-}
-const host = 'http://localhost:3000'
-const query = /* GraphQL */ `
-  query ($name: String!) {
-    hello(name: $name)
-  }
-`
-const request = ({ query, variables = {} } = {}) =>
-  fetch(host, {
+async function request({ query, variables = {} } = {}) {
+  const response = await fetch('http://localhost:3000', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ variables, query }),
-  }).then(response => response.json())
-const test_implementation = async ({ name, http_server, graphqlHTTP }) => {
-  try {
-    graphqlHTTP()
-  } catch ({ message }) {
-    doubt[`(${name}) a middleware should be created with a schema`]({
-      because: message,
-      is: "Option 'schema' is required",
-    })
-  }
-
-  const { errors } = await request()
-
-  doubt[`(${name}) not providing the query field gives an error`]({
-    because: errors[0]?.message,
-    is: "'query' field not provided",
   })
-
-  const {
-    data: { hello },
-  } = await request({ query, variables: { name: 'Pepeg' } })
-
-  doubt[`(${name}) a graphql request just works`]({
-    because: hello,
-    is: 'Hello Pepeg !',
-  })
-
-  doubt[`(${name}) an invalid operation should give an error 400`]({
-    because: await request({ query: '{ hello(name: w@w") }' }),
-    is: {
-      errors: [
-        {
-          message: 'Invalid operation: Syntax Error: Expected Name, found "@".',
-        },
-      ],
-    },
-  })
-
-  doubt[`(${name}) error should be formatted`]({
-    because: await request({ query: '{ me { sayHello(to: "pepeg") } }' }),
-    is: { data: { me: null }, errors: [{ message: '[hidden]' }] },
-  })
-
-  doubt[`(${name}) an invalid query should give an error 400`]({
-    because: await request({ query: '{ invalid }' }),
-    is: {
-      errors: [
-        {
-          message: 'Cannot query field "invalid" on type "Query".',
-          locations: [{ line: 1, column: 3 }],
-        },
-      ],
-    },
-  })
-
-  await new Promise(resolve => {
-    http_server.close(resolve)
-  })
+  return response.json()
 }
 
-test_implementation(await koa(options))
-await setTimeout(2000)
-test_implementation(await fastify(options))
+const options = {
+  schema: make_schema({
+    document: await readFile('test/schema.gql', 'utf8'),
+    resolvers: {
+      Query: {
+        hello({ name }) {
+          return `Hello ${name} !`
+        },
+        me() {
+          return { friend: 'Bob', name: 'Alice' }
+        },
+        animal() {
+          return { speak: () => 'jajaja', __typename: 'Cat' }
+        },
+      },
+      User: {
+        sayHello({ friend }, { to }) {
+          return `Hello ${to}, I'm ${friend}'s friend`
+        },
+      },
+      // as we don't define the Spanish, by default it will say 'jajaja'
+      Cat: {
+        speak() {
+          return 'miaou'
+        },
+      },
+      Subscription: {
+        async *onMessage() {
+          while (true) {
+            await setTimeout(1000)
+            yield 'Hello'
+          }
+        },
+      },
+    },
+  }),
+  // rootValue is what comes as a first argument in your resolvers, it is an object resolved by default
+  // a bit like how Promise.resolve() works, meaning that your subsequent resolvers won't be called
+  // if something is already present in this rootValue.
+  // This is useful for the first layer of calls and can contains functions but it can become confusing
+  // and is not made for nested layers like { user { language: string, speak: function } } as `speak()` won't contains previously resolved
+  // fields of the user object so won't know about the language for example.
+  // If you're not advanced in Graphql, you should stick to the built schema only
+  rootValue: {},
+  buildContext: async ctx => {},
+  formatError: error => error,
+}
+
+test('koa', async t => {
+  const server = await koa(options)
+
+  await t.test('should return a valid response', async t => {
+    const { data } = await request({
+      query: '{ me { name, sayHello(to: "John") } }',
+    })
+    assert.deepStrictEqual(data.me, {
+      name: 'Alice',
+      sayHello: "Hello John, I'm Bob's friend",
+    })
+  })
+
+  await t.test('Interface', async t => {
+    const { data } = await request({
+      query: '{ animal { speak } }',
+    })
+
+    assert.deepStrictEqual(data.animal, {
+      speak: 'miaou',
+    })
+  })
+
+  return new Promise(resolve => server.close(resolve))
+})

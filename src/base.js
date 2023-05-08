@@ -7,7 +7,7 @@ import {
   subscribe,
   validate,
   GraphQLError,
-} from 'graphql/index.mjs'
+} from 'graphql'
 
 const no_schema_error = () => {
   throw new Error("Option 'schema' is required")

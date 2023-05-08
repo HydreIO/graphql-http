@@ -1,9 +1,23 @@
+interface Animal {
+  speak: String!
+}
+
+type Spanish implements Animal {
+  speak: String!
+}
+
+type Cat implements Animal {
+  speak: String!
+}
+
 type Query {
   hello(name: String!): String!
   me: User
+  animal: Animal!
 }
 
 type User {
+  name: String!
   sayHello(to: String!): String!
 }
 

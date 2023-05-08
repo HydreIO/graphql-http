@@ -4,7 +4,7 @@
   "parserOptions": {
     "requireConfigFile": false,
     "sourceType": "module",
-    "ecmaVersion": "latest"
+    "ecmaVersion": 12
   },
   "rules": {
     "camelcase": "off",
@@ -16,6 +16,7 @@
     "prefer-object-spread": "error",
     "prefer-destructuring": "error",
     "prefer-numeric-literals": "error",
-    "import/order": ["error", { "newlines-between": "always" }]
+    "import/order": ["error", { "newlines-between": "always" }],
+    "no-throw-literal": 0
   }
 }
