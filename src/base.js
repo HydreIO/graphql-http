@@ -15,16 +15,15 @@ const no_schema_error = () => {
 const k_field = Symbol('sse id')
 /* c8 ignore next 15 */
 // i'll let DeltaEvo test those :)
-const stream_response = async function* (options, formatError) {
+async function* stream_response(options, formatError) {
   let id = 0
-
   for await (const { data, errors } of await subscribe(options)) {
     const payload = {
       data,
       ...(errors && { errors: errors.map(formatError) }),
     }
     const json = JSON.stringify(payload)
-    const event_id = data[k_field] ?? id++
+    const event_id = data?.[k_field] ?? id++
 
     yield `event:${event_id}\ndata: ${json}\n\n`
   }
@@ -74,8 +73,6 @@ export default implementation =>
     }
 
     const { operation } = getOperationAST(document, operationName)
-    /* c8 ignore next 9 */
-    // would have to do raw request, meh
     if (!operation)
       reply({
         errors: [
@@ -95,8 +92,6 @@ export default implementation =>
       contextValue,
     }
 
-    /* c8 ignore next 8 */
-    // subscription related
     if (operation === 'subscription') {
       reply({
         type: 'text/event-stream',

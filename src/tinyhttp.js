@@ -8,8 +8,10 @@ const TinyHttp = (
     query,
     variableValues,
     operationName,
-    reply: ({ type = 'application/json', ...body }) =>
-      response.status(200).json(body),
+    reply: ({ type = 'application/json', ...body }) => {
+      if (type === 'text/event-stream') body.body.pipe(response)
+      else response.status(200).json(body)
+    },
   }
 }
 

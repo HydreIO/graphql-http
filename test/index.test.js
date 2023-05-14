@@ -30,8 +30,12 @@ const options = {
           return { friend: 'Bob', name: 'Alice' }
         },
         animal() {
-          return { speak: () => 'jajaja', __typename: 'Cat' }
+          return { speak: () => 'jajaja' }
         },
+      },
+      Animal: {
+        // __resolveType() {},
+        __typeName: 'Cat',
       },
       User: {
         sayHello({ friend }, { to }) {
