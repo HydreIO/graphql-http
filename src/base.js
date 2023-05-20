@@ -13,21 +13,30 @@ const no_schema_error = () => {
   throw new Error("Option 'schema' is required")
 }
 const k_field = Symbol('sse id')
-/* c8 ignore next 15 */
-// i'll let DeltaEvo test those :)
+
 async function* stream_response(options, formatError) {
   let id = 0
-  for await (const { data, errors } of await subscribe(options)) {
-    const payload = {
-      data,
-      ...(errors && { errors: errors.map(formatError) }),
-    }
-    const json = JSON.stringify(payload)
-    const event_id = data?.[k_field] ?? id++
+  try {
+    for await (const { data, errors } of await subscribe(options)) {
+      console.dir({ data, errors })
+      const payload = {
+        data,
+        ...(errors && { errors: errors.map(formatError) }),
+      }
+      const json = JSON.stringify(payload)
+      const event_id = data?.[k_field] ?? id++
 
-    yield `event:${event_id}\ndata: ${json}\n\n`
+      yield `event:${event_id}\ndata: ${json}\n\n`
+    }
+  } catch (error) {
+    const payload = {
+      data: undefined,
+      errors: [formatError(error)],
+    }
+    yield `event:${++id}\ndata: ${JSON.stringify(payload)}\n\n`
   }
 }
+
 const try_parse = ({ query, reply, formatError }) => {
   try {
     return parse(query)
