@@ -18,7 +18,6 @@ async function* stream_response(options, formatError) {
   let id = 0
   try {
     for await (const { data, errors } of await subscribe(options)) {
-      console.dir({ data, errors })
       const payload = {
         data,
         ...(errors && { errors: errors.map(formatError) }),
