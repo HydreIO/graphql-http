@@ -1,7 +1,7 @@
 import base from './base.js'
 
 const TinyHttp = (
-  { body: { query, variables: variableValues, operationName } },
+  { body: { query, variables: variableValues, operationName } = {} },
   response
 ) => {
   return {
