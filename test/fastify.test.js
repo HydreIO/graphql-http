@@ -10,12 +10,12 @@ import graphql_http from '../src/fastify.js'
 async function create_server(options) {
   const fastify = Fastify()
   fastify.post('/', graphql_http(options))
-  await fastify.listen({ port: 3001 })
+  await fastify.listen({ port: 3002 })
   return fastify
 }
 
 async function request({ query, variables = {}, operation_name = null } = {}) {
-  const response = await fetch('http://localhost:3001', {
+  const response = await fetch('http://localhost:3002', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
