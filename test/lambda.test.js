@@ -146,18 +146,21 @@ test('lambda adapter', async t => {
     assert.ok(body.errors[0].message.toLowerCase().includes('json'))
   })
 
-  await t.test('should return error for query exceeding size limit', async () => {
-    const huge_query = `{ ${'me { name } '.repeat(20000)} }`
-    const event = create_lambda_event({
-      query: huge_query,
-    })
-    const result = await invoke_lambda(event)
+  await t.test(
+    'should return error for query exceeding size limit',
+    async () => {
+      const huge_query = `{ ${'me { name } '.repeat(20000)} }`
+      const event = create_lambda_event({
+        query: huge_query,
+      })
+      const result = await invoke_lambda(event)
 
-    assert.strictEqual(result.statusCode, 200)
-    const body = JSON.parse(result.body)
-    assert.ok(body.errors)
-    assert.ok(body.errors[0].message.toLowerCase().includes('too large'))
-  })
+      assert.strictEqual(result.statusCode, 200)
+      const body = JSON.parse(result.body)
+      assert.ok(body.errors)
+      assert.ok(body.errors[0].message.toLowerCase().includes('too large'))
+    },
+  )
 
   await t.test('should return error for non-object request body', async () => {
     const event = {

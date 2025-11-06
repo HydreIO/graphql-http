@@ -7,7 +7,7 @@ const Lambda = ({ body: raw_body }, context, reply) => {
   let parsed
   try {
     parsed = JSON.parse(raw_body)
-  } catch (error) {
+  } catch {
     reply(null, {
       statusCode: 400,
       body: JSON.stringify({
@@ -24,7 +24,9 @@ const Lambda = ({ body: raw_body }, context, reply) => {
     reply(null, {
       statusCode: 200,
       body: JSON.stringify({
-        errors: [error instanceof GraphQLError ? error : { message: error.message }],
+        errors: [
+          error instanceof GraphQLError ? error : { message: error.message },
+        ],
       }),
     })
     return { query: null, variable_values: null, operation_name: null, reply }

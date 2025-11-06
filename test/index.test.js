@@ -145,12 +145,15 @@ test('koa adapter', async t => {
     }
   })
 
-  await t.test('should return error for query exceeding size limit', async () => {
-    const huge_query = `{ ${'me { name } '.repeat(20000)} }`
-    const { errors } = await request({ query: huge_query })
-    assert.ok(errors)
-    assert.ok(errors[0].message.toLowerCase().includes('too large'))
-  })
+  await t.test(
+    'should return error for query exceeding size limit',
+    async () => {
+      const huge_query = `{ ${'me { name } '.repeat(20000)} }`
+      const { errors } = await request({ query: huge_query })
+      assert.ok(errors)
+      assert.ok(errors[0].message.toLowerCase().includes('too large'))
+    },
+  )
 
   await t.test('should timeout slow build_context', async () => {
     const Koa = (await import('koa')).default

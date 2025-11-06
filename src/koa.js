@@ -14,7 +14,12 @@ const Koa = context => {
     context.status = 200
     context.type = 'application/json'
     context.body = { errors: [graphql_error] }
-    return { query: null, variable_values: null, operation_name: null, reply: () => {} }
+    return {
+      query: null,
+      variable_values: null,
+      operation_name: null,
+      reply: () => {},
+    }
   }
 
   const { query, variables, operationName, operation_name } = request_body
