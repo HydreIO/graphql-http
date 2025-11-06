@@ -92,7 +92,7 @@ const app = new Koa().use(bodyParser()).use(
     rootValue: {},
     buildContext: async ctx => {},
     formatError: error => error,
-  })
+  }),
 )
 
 app.listen(3000)
