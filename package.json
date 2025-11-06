@@ -10,7 +10,7 @@
     "./tinyhttp": "./src/tinyhttp.js"
   },
   "scripts": {
-    "test": "node --test test/**/*.test.js",
+    "test": "node --test 'test/**/*.test.js'",
     "test:coverage": "c8 --reporter=text --reporter=html --reporter=lcov npm test",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . && prettier . --check",
