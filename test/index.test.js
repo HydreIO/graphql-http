@@ -145,5 +145,55 @@ test('koa adapter', async t => {
     }
   })
 
+  await t.test('should return error for query exceeding size limit', async () => {
+    const huge_query = `{ ${'me { name } '.repeat(20000)} }`
+    const { errors } = await request({ query: huge_query })
+    assert.ok(errors)
+    assert.ok(errors[0].message.toLowerCase().includes('too large'))
+  })
+
+  await t.test('should timeout slow build_context', async () => {
+    const Koa = (await import('koa')).default
+    const bodyParser = (await import('koa-bodyparser')).default
+    const graphql_http = (await import('../src/koa.js')).default
+
+    const slow_server = await new Promise(resolve => {
+      const app = new Koa()
+        .use(bodyParser())
+        .use(
+          graphql_http({
+            ...options,
+            build_context: async () => {
+              await setTimeout(10000)
+              return {}
+            },
+          }),
+        )
+        .listen(3001, () => {
+          resolve(app)
+        })
+    })
+
+    const response = await fetch('http://localhost:3001', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: '{ me { name } }', operation_name: null }),
+    })
+    const body = await response.json()
+    console.log('Response body:', JSON.stringify(body, null, 2))
+
+    assert.ok(body.errors, 'Expected errors in response')
+    assert.ok(
+      body.errors[0].message.toLowerCase().includes('timeout') ||
+        body.errors[0].message.toLowerCase().includes('context'),
+    )
+
+    await new Promise(resolve => slow_server.close(resolve))
+  })
+
+  // TODO: Add SSE stream error cleanup test
+  // Skipping for now due to stream reading complexity with fetch API
+  // The error handling code exists in base.js stream_response() catch block
+
   return new Promise(resolve => server.close(resolve))
 })
