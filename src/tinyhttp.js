@@ -1,9 +1,19 @@
 import base from './base.js'
+import { validate_request_body } from './validation.js'
+import { GraphQLError } from 'graphql'
 
-const TinyHttp = (
-  { body: { query, variables, operationName, operation_name } = {} },
-  response,
-) => {
+const TinyHttp = ({ body = {} }, response) => {
+  // Validate request body
+  try {
+    validate_request_body(body)
+  } catch (error) {
+    const graphql_error =
+      error instanceof GraphQLError ? error : new GraphQLError(error.message)
+    response.status(200).json({ errors: [graphql_error] })
+    return { query: null, variable_values: null, operation_name: null, reply: () => {} }
+  }
+
+  const { query, variables, operationName, operation_name } = body
   return {
     query,
     variable_values: variables,

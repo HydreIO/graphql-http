@@ -9,6 +9,8 @@ import {
   GraphQLError,
 } from 'graphql'
 
+import { with_timeout } from './validation.js'
+
 const no_schema_error = () => {
   throw new Error("Option 'schema' is required")
 }
@@ -56,6 +58,7 @@ export default implementation =>
     root_value,
     build_context = () => ({}),
     format_error = error => error,
+    context_timeout = 5000,
   } = {}) =>
   async (...input) => {
     const { query, variable_values, operation_name, reply } = implementation(
@@ -92,7 +95,25 @@ export default implementation =>
       return
     }
 
-    const context_value = (await build_context(...input)) ?? {}
+    // Build context with timeout protection
+    let context_value
+    try {
+      const wrapped_build_context = with_timeout(build_context, context_timeout)
+      context_value = (await wrapped_build_context(...input)) ?? {}
+    } catch (error) {
+      reply({
+        errors: [
+          format_error(
+            new GraphQLError(
+              error.message.includes('timed out')
+                ? 'Context building timed out'
+                : error.message,
+            ),
+          ),
+        ],
+      })
+      return
+    }
     const options = {
       document,
       schema,
