@@ -1,15 +1,12 @@
 import base from './base.js'
 
 const Koa = context => {
-  const {
-    query,
-    variables: variableValues,
-    operationName,
-  } = context.request.body
+  const { query, variables, operationName, operation_name } =
+    context.request.body
   return {
     query,
-    variableValues,
-    operationName,
+    variable_values: variables,
+    operation_name: operation_name ?? operationName,
     reply: ({ type = 'application/json', ...body }) => {
       context.status = 200
       context.type = type

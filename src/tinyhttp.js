@@ -1,13 +1,13 @@
 import base from './base.js'
 
 const TinyHttp = (
-  { body: { query, variables: variableValues, operationName } = {} },
-  response
+  { body: { query, variables, operationName, operation_name } = {} },
+  response,
 ) => {
   return {
     query,
-    variableValues,
-    operationName,
+    variable_values: variables,
+    operation_name: operation_name ?? operationName,
     reply: ({ type = 'application/json', ...body }) => {
       if (type === 'text/event-stream') body.body.pipe(response)
       else response.status(200).json(body)

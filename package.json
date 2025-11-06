@@ -10,9 +10,12 @@
     "./tinyhttp": "./src/tinyhttp.js"
   },
   "scripts": {
-    "test": "node test/index.test.js",
+    "test": "node --test test/**/*.test.js",
+    "test:coverage": "c8 --reporter=text --reporter=html --reporter=lcov npm test",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . && prettier . --check",
     "format": "prettier . --write && eslint . --fix",
+    "prepare": "husky",
     "postversion": "git push --follow-tags"
   },
   "repository": {
@@ -20,13 +23,14 @@
     "url": "git+https://github.com/HydreIO/graphql-http.git"
   },
   "keywords": [
-    "graphql"
+    "graphql",
+    "http",
+    "koa",
+    "fastify",
+    "lambda",
+    "tinyhttp",
+    "graphql-http"
   ],
-  "babel": {
-    "parserOpts": {
-      "allowAwaitOutsideFunction": true
-    }
-  },
   "publishConfig": {
     "access": "public"
   },
@@ -38,34 +42,27 @@
   "homepage": "https://github.com/HydreIO/graphql-http#readme",
   "dependencies": {
     "@hydre/make_schema": "^1.1.0",
-    "graphql": "^16.6.0",
-    "node-fetch": "^3.3.1"
+    "graphql": "^16.12.0",
+    "node-fetch": "^3.3.2",
+    "pino": "^10.1.0"
   },
   "devDependencies": {
-    "@babel/core": "7.21.8",
-    "@babel/eslint-parser": "7.21.8",
+    "@eslint/js": "^9.17.0",
     "@hydre/doubt": "^7.3.1",
     "@hydre/pino-human": "1.3.0",
-    "@tinyhttp/app": "^2.0.31",
-    "@types/node": "20.1.0",
-    "eslint": "8.40.0",
-    "eslint-config-prettier": "8.8.0",
-    "eslint-config-standard": "17.0.0",
-    "eslint-plugin-import": "2.27.5",
-    "eslint-plugin-node": "11.1.0",
-    "eslint-plugin-promise": "6.1.1",
-    "fastify": "^4.17.0",
-    "husky": "^4.3.8",
-    "koa": "^2.14.2",
-    "koa-bodyparser": "^4.4.0",
-    "lint-staged": "13.2.2",
-    "prettier": "2.8.8",
-    "tap-spec-emoji": "^6.1.2"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+    "@tinyhttp/app": "^2.4.0",
+    "@types/node": "^22.10.2",
+    "c8": "^10.1.3",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "fastify": "^5.2.0",
+    "husky": "^9.1.7",
+    "koa": "^2.15.3",
+    "koa-bodyparser": "^4.4.1",
+    "lint-staged": "^15.2.11",
+    "pino-pretty": "^13.1.2",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3"
   },
   "lint-staged": {
     "*.js": [
@@ -75,5 +72,26 @@
     "*.json": "prettier --write",
     "*.md": "prettier --write",
     "*.yml": "prettier --write"
+  },
+  "c8": {
+    "all": true,
+    "include": [
+      "src/**/*.js"
+    ],
+    "exclude": [
+      "test/**",
+      "**/*.test.js",
+      "src/logger.js"
+    ],
+    "check-coverage": true,
+    "lines": 75,
+    "functions": 70,
+    "branches": 70,
+    "statements": 75,
+    "reporter": [
+      "text",
+      "html",
+      "lcov"
+    ]
   }
 }

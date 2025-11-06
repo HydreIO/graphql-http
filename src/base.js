@@ -14,13 +14,13 @@ const no_schema_error = () => {
 }
 const k_field = Symbol('sse id')
 
-async function* stream_response(options, formatError) {
+async function* stream_response(options, format_error) {
   let id = 0
   try {
     for await (const { data, errors } of await subscribe(options)) {
       const payload = {
         data,
-        ...(errors && { errors: errors.map(formatError) }),
+        ...(errors && { errors: errors.map(format_error) }),
       }
       const json = JSON.stringify(payload)
       const event_id = data?.[k_field] ?? id++
@@ -30,19 +30,19 @@ async function* stream_response(options, formatError) {
   } catch (error) {
     const payload = {
       data: undefined,
-      errors: [formatError(error)],
+      errors: [format_error(error)],
     }
     yield `event:${++id}\ndata: ${JSON.stringify(payload)}\n\n`
   }
 }
 
-const try_parse = ({ query, reply, formatError }) => {
+const try_parse = ({ query, reply, format_error }) => {
   try {
     return parse(query)
   } catch (error) {
     reply({
       errors: [
-        formatError(new GraphQLError(`Invalid operation: ${error.message}`)),
+        format_error(new GraphQLError(`Invalid operation: ${error.message}`)),
       ],
     })
     return undefined
@@ -53,22 +53,22 @@ export { k_field }
 export default implementation =>
   ({
     schema = no_schema_error(),
-    rootValue,
-    buildContext = () => ({}),
-    formatError = error => error,
+    root_value,
+    build_context = () => ({}),
+    format_error = error => error,
   } = {}) =>
   async (...input) => {
-    const { query, variableValues, operationName, reply } = implementation(
-      ...input
+    const { query, variable_values, operation_name, reply } = implementation(
+      ...input,
     )
 
     if (!query) {
       reply({
-        errors: [formatError(new GraphQLError("'query' field not provided"))],
+        errors: [format_error(new GraphQLError("'query' field not provided"))],
       })
       return
     }
-    const document = try_parse({ query, reply, formatError })
+    const document = try_parse({ query, reply, format_error })
     if (!document) return
     const errors = validate(schema, document)
 
@@ -80,30 +80,32 @@ export default implementation =>
       return
     }
 
-    const { operation } = getOperationAST(document, operationName)
-    if (!operation)
+    const operation_ast = getOperationAST(document, operation_name)
+    if (!operation_ast) {
       reply({
         errors: [
-          formatError(
-            new GraphQLError(`Operation '${operationName}' not found`)
+          format_error(
+            new GraphQLError(`Operation '${operation_name}' not found`),
           ),
         ],
       })
+      return
+    }
 
-    const contextValue = (await buildContext(...input)) ?? {}
+    const context_value = (await build_context(...input)) ?? {}
     const options = {
       document,
       schema,
-      operationName,
-      rootValue,
-      variableValues,
-      contextValue,
+      operationName: operation_name,
+      rootValue: root_value,
+      variableValues: variable_values,
+      contextValue: context_value,
     }
 
-    if (operation === 'subscription') {
+    if (operation_ast.operation === 'subscription') {
       reply({
         type: 'text/event-stream',
-        body: Readable.from(stream_response(options, formatError)),
+        body: Readable.from(stream_response(options, format_error)),
       })
       return
     }
@@ -113,7 +115,7 @@ export default implementation =>
     reply({
       data,
       ...(execution_errors && {
-        errors: execution_errors.map(formatError),
+        errors: execution_errors.map(format_error),
       }),
     })
   }
