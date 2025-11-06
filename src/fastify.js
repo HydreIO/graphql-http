@@ -9,8 +9,16 @@ const Fastify = ({ body }, reply) => {
   } catch (error) {
     const graphql_error =
       error instanceof GraphQLError ? error : new GraphQLError(error.message)
-    reply.status(200).type('application/json').send({ errors: [graphql_error] })
-    return { query: null, variable_values: null, operation_name: null, reply: () => {} }
+    reply
+      .status(200)
+      .type('application/json')
+      .send({ errors: [graphql_error] })
+    return {
+      query: null,
+      variable_values: null,
+      operation_name: null,
+      reply: () => {},
+    }
   }
 
   const { query, variables, operationName, operation_name } = body

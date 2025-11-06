@@ -10,7 +10,12 @@ const TinyHttp = ({ body = {} }, response) => {
     const graphql_error =
       error instanceof GraphQLError ? error : new GraphQLError(error.message)
     response.status(200).json({ errors: [graphql_error] })
-    return { query: null, variable_values: null, operation_name: null, reply: () => {} }
+    return {
+      query: null,
+      variable_values: null,
+      operation_name: null,
+      reply: () => {},
+    }
   }
 
   const { query, variables, operationName, operation_name } = body
