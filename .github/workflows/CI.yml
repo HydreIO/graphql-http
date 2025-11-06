@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
       - run: npm i
-      - run: npm run coverage
+      - run: npm run test:coverage
       - uses: codecov/codecov-action@v1
 
   publish-npm:
